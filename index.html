@@ -354,49 +354,78 @@ $("#dl").onclick=async()=>{const ms=$("#ms"),html=`<!DOCTYPE html><html><head><m
 dsave(`Quotation_${V.ref}.html`,new Blob([html],{type:"text/html"}),html)};
 edit();
 </script>
+  
 <script type="module">
-  // 1. Import Firebase using browser URLs (instead of "firebase/app")
   import { initializeApp } from "https://gstatic.com";
-  import { getFirestore, collection, addDoc, getDocs } from "https://gstatic.com";
+  import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://gstatic.com";
 
-  // 2. Your project configuration
   const firebaseConfig = {
     apiKey: "AIzaSyAEU1xv7NA4f_YUuiF2gA8PThkWHExTEIc",
-    authDomain: "ro-quote-gen.firebaseapp.com",
+    authDomain: "://firebaseapp.com",
     projectId: "ro-quote-gen",
     storageBucket: "ro-quote-gen.firebasestorage.app",
     messagingSenderId: "347939191834",
-    appId: "1:3479391834:web:1244caf37ac81fde9225a3",
+    appId: "1:347939191834:web:1244caf37ac81fde9225a3",
     measurementId: "G-YN545FG337"
   };
 
-  // 3. Initialize Firebase & Firestore Database
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const quotesCol = collection(db, "quotes");
 
-  // 4. Function to SAVE a quote to the database
-  window.saveQuote = async function(quoteData) {
+  // 1. Live-sync all quotes from Firebase into your app's Saved Quotes list
+  onSnapshot(quotesCol, (snapshot) => {
+    let changed = false;
+    snapshot.docChanges().forEach((change) => {
+      const data = change.doc.data();
+      if (change.type === "added" || change.type === "modified") {
+        LIB[change.doc.id] = data;
+        changed = true;
+      } else if (change.type === "removed") {
+        delete LIB[change.doc.id];
+        changed = true;
+      }
+    });
+    if (changed) {
+      slib();
+      // Refresh the Saved Quotes UI if the editor is currently open
+      if (document.getElementById("ed").style.display !== "none") {
+        edit();
+      }
+    }
+  }, (err) => {
+    console.error("Firestore sync error:", err);
+    document.getElementById("ms").textContent = "Cloud sync error (check Firestore Rules)";
+  });
+
+  // 2. Sync to Firebase whenever "Save quote" (#sv) or "New quote" (#nw) is clicked
+  const syncCurrentQuoteToCloud = async () => {
+    if (!S.client || !V.ref || !LIB[V.ref]) return;
     try {
-      const docRef = await addDoc(collection(db, "quotes"), {
-        ...quoteData,
-        createdAt: new Date()
-      });
-      alert("Quote saved! ID: " + docRef.id);
-    } catch (error) {
-      console.error("Error saving quote:", error);
-      alert("Failed to save quote. Check console for details.");
+      await setDoc(doc(db, "quotes", V.ref), LIB[V.ref]);
+      document.getElementById("ms").textContent = `Saved ${V.ref} to Firebase ✓`;
+    } catch (err) {
+      console.error("Firebase save failed:", err);
+      document.getElementById("ms").textContent = "Saved locally (cloud sync failed)";
     }
   };
 
-  // 5. Function to LOAD all saved quotes from the database
-  window.loadQuotes = async function() {
-    const querySnapshot = await getDocs(collection(db, "quotes"));
-    const savedQuotes = [];
-    querySnapshot.forEach((doc) => {
-      savedQuotes.push({ id: doc.id, ...doc.data() });
-    });
-    console.log("Loaded quotes:", savedQuotes);
-    return savedQuotes;
-  };
+  document.getElementById("sv").addEventListener("click", () => {
+    setTimeout(syncCurrentQuoteToCloud, 50);
+  });
+
+  // 3. Delete from Firebase when a user clicks "Delete" on a saved quote
+  document.addEventListener("click", async (ev) => {
+    const refToDelete = ev.target.dataset?.dq;
+    if (refToDelete && !LIB[refToDelete]) {
+      try {
+        await deleteDoc(doc(db, "quotes", refToDelete));
+        document.getElementById("ms").textContent = `Deleted ${refToDelete} from Firebase`;
+      } catch (err) {
+        console.error("Firebase delete failed:", err);
+      }
+    }
+  });
 </script>
+
 </body></html>
