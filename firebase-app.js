@@ -125,3 +125,4 @@ onAuthStateChanged(auth, async (user) => {
     status("Signed out. Sign in with an account created by your Firebase project administrator.");
   }
 });
+}
