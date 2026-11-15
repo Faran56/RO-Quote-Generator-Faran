@@ -81,21 +81,21 @@ if (!configReady) {
     }
   }
 
-  $("fb-signin").addEventListener("click", async () => {
-    const email = $("fb-email").value.trim();
-    const password = $("fb-password").value;
+  $("loginButton").addEventListener("click", async () => {
+    const email = $("loginEmail").value.trim();
+    const password = $("loginPassword").value;
     if (!email || !password) {
       status("Enter your team email and password.");
       return;
     }
-    $("fb-signin").disabled = true;
+    $("loginButton").disabled = true;
     status("Signing in…");
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
       status("Sign-in failed: " + (error.code || error.message));
     } finally {
-      $("fb-signin").disabled = false;
+      $("loginButton").disabled = false;
     }
   });
 
