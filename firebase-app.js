@@ -100,7 +100,7 @@ if (!configReady) {
   });
 
   $("signOutBtn").addEventListener("click", () => signOut(auth));
-  $("fb-sync").addEventListener("click", syncAll);
+  window.addEventListener("sqro:save-library", saveCurrentLibrary); window.addEventListener("sqro:delete", async (event) => {
 
   window.addEventListener("sqro:save-library", saveCurrentLibrary);
   window.addEventListener("sqro:delete", async (event) => {
