@@ -1,1 +1,0 @@
-# RO-Quote-Generator-Faran
