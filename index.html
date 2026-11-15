@@ -353,4 +353,50 @@ const CSS=()=>[...document.styleSheets[0].cssRules].map(r=>r.cssText).filter(t=>
 $("#dl").onclick=async()=>{const ms=$("#ms"),html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Quotation ${e(V.ref)}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins&family=Montserrat&family=Roboto&family=Lato&display=swap"><style>${CSS()}.doc .pg{box-shadow:none;margin:0 auto}</style></head><body><div class="doc ${S.tpl=="modern"?"m":"c"}" style="${dstyle()}">${build()}</div></body></html>`;
 dsave(`Quotation_${V.ref}.html`,new Blob([html],{type:"text/html"}),html)};
 edit();
-</script></body></html>
+</script>
+<script type="module">
+  // 1. Import Firebase using browser URLs (instead of "firebase/app")
+  import { initializeApp } from "https://gstatic.com";
+  import { getFirestore, collection, addDoc, getDocs } from "https://gstatic.com";
+
+  // 2. Your project configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAEU1xv7NA4f_YUuiF2gA8PThkWHExTEIc",
+    authDomain: "ro-quote-gen.firebaseapp.com",
+    projectId: "ro-quote-gen",
+    storageBucket: "ro-quote-gen.firebasestorage.app",
+    messagingSenderId: "347939191834",
+    appId: "1:3479391834:web:1244caf37ac81fde9225a3",
+    measurementId: "G-YN545FG337"
+  };
+
+  // 3. Initialize Firebase & Firestore Database
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 4. Function to SAVE a quote to the database
+  window.saveQuote = async function(quoteData) {
+    try {
+      const docRef = await addDoc(collection(db, "quotes"), {
+        ...quoteData,
+        createdAt: new Date()
+      });
+      alert("Quote saved! ID: " + docRef.id);
+    } catch (error) {
+      console.error("Error saving quote:", error);
+      alert("Failed to save quote. Check console for details.");
+    }
+  };
+
+  // 5. Function to LOAD all saved quotes from the database
+  window.loadQuotes = async function() {
+    const querySnapshot = await getDocs(collection(db, "quotes"));
+    const savedQuotes = [];
+    querySnapshot.forEach((doc) => {
+      savedQuotes.push({ id: doc.id, ...doc.data() });
+    });
+    console.log("Loaded quotes:", savedQuotes);
+    return savedQuotes;
+  };
+</script>
+</body></html>
