@@ -39,33 +39,33 @@ textarea{min-height:110px;font-family:ui-monospace,Menlo,Consolas,monospace;font
 .doc .cv{align-items:center}.doc .lg{height:auto;width:auto;max-height:24mm;max-width:70mm}
 @media print{html,body{height:auto}#pv{overflow:visible!important}body::before,#bar,#ed{display:none!important}#pv{display:block!important;padding:0}.doc .pg{box-shadow:none;margin:0;width:auto;min-height:268mm;padding:0;background:#fff;page-break-after:always}.doc .pg:last-child{page-break-after:auto}@page{size:A4;margin:14mm}.doc tr{page-break-inside:avoid}}
 
-#fbx{max-width:760px;margin:10px auto;padding:0 10px}
-#fbx .fbcard{background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:12px}
-#fbx .fbrow{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
-#fbx label{flex:1 1 180px}
-#fbx .fbstatus{font-size:12px;color:var(--mu);margin-top:7px}
-#fbx input{min-width:0}
-</style><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@400;600;700&family=Montserrat:wght@400;600;700&family=Roboto:wght@400;700&family=Lato:wght@400;700&display=swap"><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script></head><body>
+/* Firebase team-access layer */
+body.locked #bar,body.locked #ed,body.locked #pv{display:none!important}
+#loginGate{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
+#loginGate[hidden]{display:none!important}
+.loginCard{width:min(100%,420px);background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.16)}
+.loginBrand{font-size:13px;font-weight:700;color:var(--ac);margin-bottom:20px}
+.loginCard h1{font-size:23px;margin:0 0 6px}.loginCard p{font-size:13px;color:var(--mu);margin:0 0 20px}
+#loginForm{display:grid;gap:12px}.loginCard label{font-size:12px}.loginCard input{min-height:42px;margin-top:4px}
+#loginButton{min-height:42px;margin-top:4px}.loginCard #loginStatus{font-size:12px;color:var(--mu);margin-top:14px;min-height:18px}
+#signOutBtn{display:none}
+</style><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@400;600;700&family=Montserrat:wght@400;600;700&family=Roboto:wght@400;700&family=Lato:wght@400;700&display=swap"><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script></head><body class="locked">
+<section id="loginGate" aria-label="Team sign in">
+  <div class="loginCard">
+    <div class="loginBrand">RO Plant Quotation Generator</div>
+    <h1>Team sign in</h1>
+    <p>Sign in with your company account to access shared quotations.</p>
+    <form id="loginForm">
+      <label>Work email<input id="loginEmail" type="email" autocomplete="username" required placeholder="name@company.com"></label>
+      <label>Password<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Password"></label>
+      <button class="pri" id="loginButton" type="submit">Sign in</button>
+    </form>
+    <div id="loginStatus" role="status" aria-live="polite">Connecting to secure team access…</div>
+  </div>
+</section>
 <div id="bar"><b>RO Plant Quotation Generator</b>
 <button id="te" class="on">Edit</button><button id="tp">Preview</button>
-<button id="sv">Save quote</button><button id="nw">New quote</button><button id="pr" class="pri">Print / PDF</button><button id="dw" class="pri">Download Word</button><button id="dl">Download HTML</button><span id="ms" style="font-size:12px;color:var(--mu)"></span></div>
-
-<div id="fbx">
-  <div class="fbcard">
-    <div id="fb-login">
-      <b>Team cloud access</b>
-      <div class="fbrow" style="margin-top:8px">
-        <label>Work email<input id="fb-email" type="email" autocomplete="username" placeholder="name@company.com"></label>
-        <label>Password<input id="fb-password" type="password" autocomplete="current-password" placeholder="Firebase team password"></label>
-        <button id="fb-signin" class="pri" type="button">Sign in</button>
-      </div>
-    </div>
-    <div id="fb-user" hidden>
-      <div class="row"><b id="fb-who">Signed in</b><span style="flex:1"></span><button id="fb-sync" type="button">Sync now</button><button id="fb-signout" type="button">Sign out</button></div>
-    </div>
-    <div class="fbstatus" id="fb-status">Cloud is not connected yet. Add your Firebase web-app configuration to firebase-config.js.</div>
-  </div>
-</div>
+<button id="sv">Save quote</button><button id="nw">New quote</button><button id="pr" class="pri">Print / PDF</button><button id="dw" class="pri">Download Word</button><button id="dl">Download HTML</button><span id="ms" style="font-size:12px;color:var(--mu)"></span><span id="cloudUser" style="font-size:12px;color:var(--mu)"></span><button id="signOutBtn" type="button" class="sm">Sign out</button></div>
 <div id="ed"></div><div id="pv"><div class="doc" id="doc"></div></div>
 <script>
 const T={
@@ -320,7 +320,7 @@ function fb(fn,t){let d=$("#fb");if(!d){d=document.createElement("div");d.id="fb
 function adl(fn,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(a.href)},2000)}
 async function dsave(fn,blob,txt){const ms=$("#ms");try{if(typeof claude==="undefined"||!claude.use){adl(fn,blob);ms.textContent="Download started — if nothing happens, open the page from its claude.ai artifact link";if(txt&&!navigator.userActivation)fb(fn,txt);return}const dn=await claude.use("downloads");if(!dn){adl(fn,blob);ms.textContent="Download started";return}await dn.save({filename:fn,data:blob});ms.textContent="Saved"}catch(x){if(x&&x.code=="declined"){ms.textContent="";return}ms.textContent="Download failed ("+((x&&(x.code||x.message))||x)+")";if(txt)fb(fn,txt)}}
 let LIB={};try{LIB=JSON.parse(localStorage.getItem("sqt_ro_lib")||"{}")}catch(x){}
-const slib=()=>{try{localStorage.setItem("sqt_ro_lib",JSON.stringify(LIB))}catch(x){$("#ms").textContent="Storage full — use Backup"}};
+const slib=()=>{try{localStorage.setItem("sqt_ro_lib",JSON.stringify(LIB));window.dispatchEvent(new CustomEvent("sqro:save-library"))}catch(x){$("#ms").textContent="Storage full — use Backup"}};
 function snap(){if(!S.client)return;calc();const s=JSON.parse(JSON.stringify(S));delete s.logo;const d=mk().txt;Object.keys(s.txt).forEach(k=>{if(s.txt[k]==d[k])delete s.txt[k]});LIB[V.ref]={ref:V.ref,at:Date.now(),client:S.client,tots:S.opts.map(o=>S.cur+" "+m2(tot(o).t)).join(" / "),s};slib()}
 function loadq(r){const q=LIB[r];if(!q)return;snap();const logo=S.logo;S=Object.assign(mk(),q.s,{logo,txt:Object.assign(mk().txt,q.s.txt)});S.v=2;save();edit();show(0)}
 const bk=()=>JSON.stringify({app:"sqt-ro",cur:S,lib:LIB});
@@ -332,8 +332,7 @@ t.querySelectorAll("img").forEach(i=>i.setAttribute("width",i.closest("table")?1
 let img=null,h=t.innerHTML.replace(/src="data:image\/(\w+);base64,([^"]+)"/g,(m,ty,d)=>{img={ext:ty=="jpeg"?"jpg":ty,ty,d};return`src="logo.${img.ext}"`});
 const W=".doc .pg{width:auto;min-height:0;padding:0;margin:0;box-shadow:none;background:#fff;display:block;page-break-after:always}.doc .pb,.doc .pf{display:block}.doc .pf{font-size:7.5pt;color:#667}";
 const cls=S.tpl=="modern"?"m":"c",vr=x=>x.replace(/var\(--p\)/g,S.c1).replace(/var\(--a\)/g,S.c2).replace(/var\(--t\)/g,"#f2f6fb").replace(/var\(--am\)/g,"#d9962b");
-const html=vr(`<html><head><meta charset="utf-8"><style>${CSS()}${W}</style></head><body><div class="doc ${cls}" style="${dstyle()}">${h}</div><script type="module" src="./firebase-app.js"></script>
-</body></html>`);
+const html=vr(`<html><head><meta charset="utf-8"><style>${CSS()}${W}</style></head><body><div class="doc ${cls}" style="${dstyle()}">${h}</div></body></html>`);
 const B="----=_NextPart_SQ",w76=s=>s.replace(/.{76}/g,"$&\r\n"),u8=s=>btoa(unescape(encodeURIComponent(s)));
 const mht=`MIME-Version: 1.0\r\nContent-Type: multipart/related; boundary="${B}"; type="text/html"\r\n\r\n--${B}\r\nContent-Type: text/html; charset="utf-8"\r\nContent-Transfer-Encoding: base64\r\nContent-Location: file:///C:/q/doc.htm\r\n\r\n${w76(u8(html))}\r\n`+(img?`--${B}\r\nContent-Type: image/${img.ty}\r\nContent-Transfer-Encoding: base64\r\nContent-Location: file:///C:/q/logo.${img.ext}\r\n\r\n${w76(img.d)}\r\n`:"")+`--${B}--\r\n`;
 const X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',R="http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -345,7 +344,7 @@ z.file("word/afchunk.mht",mht);
 const blob=await z.generateAsync({type:"blob",mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
 ms.textContent="";dsave(`Quotation_${V.ref}.docx`,blob)};
 const libUI=()=>{const a=Object.values(LIB).sort((x,y)=>y.at-x.at);return`<details open><summary>Saved quotes (${a.length})</summary><div style="padding-bottom:10px">${a.length?a.map(q=>`<div class="op"><b>${e(q.ref)}</b> — ${e(q.client)}<br><small>${new Date(q.at).toLocaleDateString("en-GB")} · ${e(q.tots)}</small><div class="row"><button class="sm" data-lq="${e(q.ref)}">Open</button><button class="sm" data-dq="${e(q.ref)}">Delete</button></div></div>`).join(""):"<small>No saved quotes yet — press “Save quote” (New quote also saves the current one).</small>"}</div></details>`};
-$("#sv").onclick=()=>{if(!S.client){$("#ms").textContent="Enter a client first";return}snap();window.dispatchEvent(new Event("sqro:save-library"));edit();$("#ms").textContent="Saved to list"};
+$("#sv").onclick=()=>{if(!S.client){$("#ms").textContent="Enter a client first";return}snap();edit();$("#ms").textContent="Saved to list"};
 document.addEventListener("click",ev=>{const d=ev.target.dataset,k=d.bk;if(d.lq)return loadq(d.lq);if(d.dq){if(confirm("Delete saved quote "+d.dq+"?")){delete LIB[d.dq];slib();window.dispatchEvent(new CustomEvent("sqro:delete",{detail:{ref:d.dq}}));edit()}return}if(!k)return;if(k=="x"){snap();const j=bk();dsave(`SQ_RO_backup_${V.ref}.json`,new Blob([j],{type:"application/json"}),j)}else if(k=="i")$("#bkf").click();else{S.logo="";save();prev()}});
 document.addEventListener("change",ev=>{if(ev.target.id!="bkf")return;const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j0=JSON.parse(r.result),j=j0.cur||j0;if(j0.lib){Object.assign(LIB,j0.lib);slib()}S=Object.assign(mk(),j,{txt:Object.assign(mk().txt,j.txt)});if(!S.v){S.v=2;S.logo=S.logo||LOGO0}save();edit();$("#ms").textContent="Backup restored"}catch(x){alert("Not a valid backup file")}};r.readAsText(f)});
 function prev(){const d=$("#doc");d.className="doc "+(S.tpl=="modern"?"m":"c");d.style.cssText=dstyle();d.innerHTML=build();calc();document.querySelectorAll(".tot").forEach(el=>{const o=S.opts[+el.dataset.o];if(!o)return;const t=tot(o);el.innerHTML=`Subtotal <b>${m2(t.s)}</b> · VAT <b>${m2(t.v)}</b> · Total <b>${S.cur} ${m2(t.t)}</b><br><i>${words(t.t,S.cur)}</i>`})}
@@ -375,26 +374,20 @@ $("#te").onclick=()=>show(0);$("#tp").onclick=()=>show(1);
 $("#nw").onclick=()=>{if(!confirm("Start a new quote? Client, date and prices reset; the serial number increments."))return;const n=mk(),s=+S.serial+1;S=Object.assign(n,{serial:String(isNaN(s)?S.serial:s),client:"",attn:"",address:"",logo:S.logo,txt:S.txt,rate:S.rate,signName:S.signName,signTitle:S.signTitle,water:WA.map(()=>"")});S.opts.forEach(o=>o.items.forEach(i=>i.p=0));save();edit();show(0)};
 $("#pr").onclick=()=>{show(1);setTimeout(()=>window.print(),150)};
 const CSS=()=>[...document.styleSheets[0].cssRules].map(r=>r.cssText).filter(t=>/\.doc|\.m |\.cd|@page/.test(t)&&!/@media print/.test(t)).join("");
-$("#dl").onclick=async()=>{const ms=$("#ms"),html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Quotation ${e(V.ref)}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins&family=Montserrat&family=Roboto&family=Lato&display=swap"><style>${CSS()}.doc .pg{box-shadow:none;margin:0 auto}</style></head><body><div class="doc ${S.tpl=="modern"?"m":"c"}" style="${dstyle()}">${build()}</div><script type="module" src="./firebase-app.js"></script>
-</body></html>`;
+$("#dl").onclick=async()=>{const ms=$("#ms"),html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Quotation ${e(V.ref)}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins&family=Montserrat&family=Roboto&family=Lato&display=swap"><style>${CSS()}.doc .pg{box-shadow:none;margin:0 auto}</style></head><body><div class="doc ${S.tpl=="modern"?"m":"c"}" style="${dstyle()}">${build()}</div></body></html>`;
 dsave(`Quotation_${V.ref}.html`,new Blob([html],{type:"text/html"}),html)};
 edit();
-
-window.SQRO = {
-  getLibrary: () => JSON.parse(JSON.stringify(LIB)),
-  replaceLibrary: (data) => { LIB = data && typeof data === "object" ? data : {}; slib(); edit(); },
-  snapshotCurrent: () => { snap(); return LIB[V.ref] ? JSON.parse(JSON.stringify(LIB[V.ref])) : null; },
-  loadQuote: (ref) => loadq(ref),
-  setStatus: (message) => { $("#fb-status").textContent = message; },
-  setCloudUser: (email) => {
-    $("#fb-login").hidden = !!email;
-    $("#fb-user").hidden = !email;
-    $("#fb-who").textContent = email ? "Signed in: " + email : "";
-  }
-};
-
 </script>
   
 
+
+<script>
+// Narrow bridge between the original quotation generator and Firebase module.
+window.SQRO={
+  getLibrary:()=>JSON.parse(JSON.stringify(LIB)),
+  replaceLibrary:(next)=>{LIB=next&&typeof next==="object"?next:{};try{localStorage.setItem("sqt_ro_lib",JSON.stringify(LIB))}catch(e){};edit()},
+  setStatus:(message)=>{$("#ms").textContent=message||""}
+};
+</script>
 <script type="module" src="./firebase-app.js"></script>
-</body></html>
+</body>
