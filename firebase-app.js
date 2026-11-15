@@ -99,28 +99,29 @@ if (!configReady) {
     }
   });
 
-  $("signOutBtn").addEventListener("click", () => signOut(auth));
-  window.addEventListener("sqro:save-library", saveCurrentLibrary); window.addEventListener("sqro:delete", async (event) => {
+$("signOutBtn").addEventListener("click", () => signOut(auth));
 
-  window.addEventListener("sqro:save-library", saveCurrentLibrary);
-  window.addEventListener("sqro:delete", async (event) => {
-    if (!currentUser || !event.detail?.ref) return;
-    try {
-      await deleteDoc(doc(db, "quotations", event.detail.ref));
-      status("Quotation deleted from the shared cloud database.");
-    } catch (error) {
-      status("Cloud delete failed: " + (error.code || error.message));
-    }
-  });
+window.addEventListener("sqro:save-library", saveCurrentLibrary);
 
-  onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
-    window.SQRO?.setCloudUser(user?.email || "");
-    if (user) {
-      status("Connected. Checking cloud quotations and migrating this browser's saved library…");
-      await syncAll();
-    } else {
-      status("Signed out. Sign in with an account created by your Firebase project administrator.");
-    }
-  });
-}
+window.addEventListener("sqro:delete", async (event) => {
+  if (!currentUser || !event.detail?.ref) return;
+
+  try {
+    await deleteDoc(doc(db, "quotations", event.detail.ref));
+    status("Quotation deleted from the shared cloud database.");
+  } catch (error) {
+    status("Cloud delete failed: " + (error.code || error.message));
+  }
+});
+
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  window.SQRO?.setCloudUser(user?.email || "");
+
+  if (user) {
+    status("Connected. Checking cloud quotations and migrating this browser's saved library…");
+    await syncAll();
+  } else {
+    status("Signed out. Sign in with an account created by your Firebase project administrator.");
+  }
+});
