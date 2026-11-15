@@ -99,7 +99,7 @@ if (!configReady) {
     }
   });
 
-  $("fb-signout").addEventListener("click", () => signOut(auth));
+  $("signOutBtn").addEventListener("click", () => signOut(auth));
   $("fb-sync").addEventListener("click", syncAll);
 
   window.addEventListener("sqro:save-library", saveCurrentLibrary);
