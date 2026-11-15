@@ -81,23 +81,29 @@ if (!configReady) {
     }
   }
 
-  $("loginButton").addEventListener("click", async () => {
-    const email = $("loginEmail").value.trim();
-    const password = $("loginPassword").value;
-    if (!email || !password) {
-      status("Enter your team email and password.");
-      return;
-    }
-    $("loginButton").disabled = true;
-    status("Signing in…");
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-      status("Sign-in failed: " + (error.code || error.message));
-    } finally {
-      $("loginButton").disabled = false;
-    }
-  });
+
+$("loginForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+
+  if (!email || !password) {
+    status("Enter your team email and password.");
+    return;
+  }
+
+  $("loginButton").disabled = true;
+  status("Signing in…");
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (error) {
+    status("Sign-in failed: " + (error.code || error.message));
+  } finally {
+    $("loginButton").disabled = false;
+  }
+});
 
 $("signOutBtn").addEventListener("click", () => signOut(auth));
 
