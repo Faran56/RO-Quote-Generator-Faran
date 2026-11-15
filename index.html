@@ -383,10 +383,32 @@ edit();
 
 <script>
 // Narrow bridge between the original quotation generator and Firebase module.
-window.SQRO={
-  getLibrary:()=>JSON.parse(JSON.stringify(LIB)),
-  replaceLibrary:(next)=>{LIB=next&&typeof next==="object"?next:{};try{localStorage.setItem("sqt_ro_lib",JSON.stringify(LIB))}catch(e){};edit()},
-  setStatus:(message)=>{$("#ms").textContent=message||""}
+
+window.SQRO = {
+  getLibrary: () => JSON.parse(JSON.stringify(LIB)),
+
+  replaceLibrary: (next) => {
+    LIB = next && typeof next === "object" ? next : {};
+    try {
+      localStorage.setItem("sqt_ro_lib", JSON.stringify(LIB));
+    } catch (e) {}
+    edit();
+  },
+
+  setStatus: (message) => {
+    const msg = message || "";
+    $("#ms").textContent = msg;
+    const loginStatus = $("#loginStatus");
+    if (loginStatus) loginStatus.textContent = msg;
+  },
+
+  setCloudUser: (email) => {
+    const signedIn = !!email;
+    document.body.classList.toggle("locked", !signedIn);
+    $("#loginGate").hidden = signedIn;
+    $("#signOutBtn").style.display = signedIn ? "inline-block" : "none";
+    $("#cloudUser").textContent = email || "";
+  }
 };
 </script>
 <script type="module" src="./firebase-app.js"></script>
